@@ -31,5 +31,5 @@ $(I_USR_BIN)/runfromiptcpudp:
 	sudo cp -avu runfromiptcpudp    $(I_USR_BIN)
 
 install:	all
-#	cp -avu  runfromiptcpudp.so $(I_USR_LIB)
-#	cp -avu runfromiptcpudp    $(I_USR_BIN)
+	cp -avu  runfromiptcpudp.so $(I_USR_LIB)
+	cp -avu runfromiptcpudp    $(I_USR_BIN)

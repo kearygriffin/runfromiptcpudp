@@ -10,10 +10,11 @@ I_USR_BIN=/usr/local/bin
 
 # export RUNFROMIPTCPUDP_VERB=2
 # 0 = syslog nothing
-# 1 = syslog err/warn - default / the one you want.
-# 2 = syslog info
-# 3 = syslog xtra
-# 4 = syslog dbg
+# 1 = syslog err
+# 2 = syslog err - default / the one you want.
+# 3 = syslog info
+# 4 = syslog xtra
+# 5 = syslog dbg
 
 #export RUNFROMIPTCPUDP_ADDRESS=127.0.0.2
 
