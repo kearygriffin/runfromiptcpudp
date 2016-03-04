@@ -30,6 +30,6 @@ $(I_USR_LIB)/runfromiptcpudp.so: runfromiptcpudp.so
 $(I_USR_BIN)/runfromiptcpudp:
 	sudo cp -avu runfromiptcpudp    $(I_USR_BIN)
 
-#install:	all
+install:	all
 #	cp -avu  runfromiptcpudp.so $(I_USR_LIB)
 #	cp -avu runfromiptcpudp    $(I_USR_BIN)
