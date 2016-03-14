@@ -1,6 +1,19 @@
 # runfromiptcpudp
 Constrain a (Linux) program to use a designated IP address (and, thus, interface).
 
+
+
+To make use of / install:
+
+$ mkdir ~/local/src; cd ~/local/src
+$ git clone https://github.com/rAntOCauDgb/runfromiptcpudp.git
+$ ./INSTALL #(which merely calls make; make install.)
+
+Thus, having set up such as br0 as per https://forums.whonix.org/t/whonix-torrents-and-being-a-good-tor-citizen/1766/41?u=rantocaudgb:
+
+runfromiptcpudp 192.168.2.1 {program}
+
+
 ==============================================================================
 runfromiptcpudp: Combine force_bind & fixsrcip into one .so.
 ==============================================================================
