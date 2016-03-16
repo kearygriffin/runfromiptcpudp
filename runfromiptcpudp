@@ -43,4 +43,7 @@ fi
 
 shift
 
-exec "$@"
+sudo ip link set tap0 up
+#exec "$@"
+$@
+sudo ip link set tap0 down
