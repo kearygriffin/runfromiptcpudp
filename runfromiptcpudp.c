@@ -1060,7 +1060,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags)	// UDP4
 //  error = -1, errno set. else, # chars sent (ssize_t). See errno.h.
 
 	ii = (charssent==-1?VERB_WARN:VERB_INFO);
-	if( lgRUNFROMIPTCPUDP_VERB >= ii )	syslog(LOG_ERR, "runfromiptcpudp: Sendmsg() - %ssuccessful (%d chars sent) [%d) to '%s:%u'.\n", (charssent==-1?"UN":"  "), charssent, errno, dstaddr, dstport );
+	if( lgRUNFROMIPTCPUDP_VERB >= ii )	syslog(LOG_ERR, "runfromiptcpudp: Sendmsg() - %ssuccessful (%d chars sent) [%d](%s) to '%s:%u'.\n", (charssent==-1?"UN":"  "), charssent, errno, errnostr(errno), dstaddr, dstport );
 
 #ifdef LDBGING
 	lgRUNFROMIPTCPUDP_VERB = lgIPDBGLVL;
@@ -1185,7 +1185,7 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, const struct 
 	//  error = -1, errno set. else, # chars sent (ssize_t). See errno.h.
 
 	ii = (charssent==-1?VERB_WARN:VERB_INFO);
-	if( lgRUNFROMIPTCPUDP_VERB >= ii )	syslog(LOG_ERR, "runfromiptcpudp: Sendto() - %ssuccessful (%d chars sent) [%d) to '%s:%u'.\n", (charssent==-1?"UN":"  "), charssent, errno, dstaddr, dstport );
+	if( lgRUNFROMIPTCPUDP_VERB >= ii )	syslog(LOG_ERR, "runfromiptcpudp: Sendto() - %ssuccessful (%d chars sent) [%d](%s) to '%s:%u'.\n", (charssent==-1?"UN":"  "), charssent, errno, errnostr(errno), dstaddr, dstport );
 
 #ifdef LDBGING
 	lgRUNFROMIPTCPUDP_VERB = lgIPDBGLVL;

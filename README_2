@@ -1,0 +1,98 @@
+================
+Useful commands:
+================
+
+runfromiptcpudp and iptables logs log to syslog:
+------------------------------------------------
+tail -F /var/log/syslog
+
+Keep an eye out that traffic is only flowing where expected:
+------------------------------------------------------------
+while clear ; do date ; netstat -4npa | grep -e "\/nw *$" -e "\/qbittorrent *$" -e "\/ktorrent *$" | sort ; echo ; netstat -4npa | grep -v " 192.168.2.1 " -e "/rinetd *$" -e "/sshd" -e "/perl *$" | grep -e " 10.152.152.11:" | sort ; sleep 10 ; done
+
+-----------
+showipt.sh:
+-----------
+#!/bin/bash
+addopts=-n
+( \
+  echo -------------------------------------- \
+; echo iptables --line-numbers -t filter $addopts -vL: \
+; echo -------------------------------------- \
+; iptables --line-numbers -t filter $addopts -vL \
+; echo \
+; echo ----------------------------------- \
+; echo iptables --line-numbers -t nat $addopts -vL: \
+; echo ----------------------------------- \
+; iptables --line-numbers -t nat $addopts -vL \
+; echo \
+; echo ----------------------------------- \
+; echo iptables --line-numbers -t raw $addopts -vL: \
+; echo ----------------------------------- \
+; iptables --line-numbers -t raw $addopts -vL \
+; echo \
+) | tee _latest_iptables-L.txt | less -S
+echo
+echo Captured. less _latest_iptables-L.txt to view.
+echo
+iptables-save > _latest_iptables-save.txt
+echo
+echo iptables-save captured. less _latest_iptables-save.txt to view.
+echo
+-----------
+
+
+============
+Assumptions:
+============
+
+-------------------------------------------
+/etc/network/interfaces has something like:
+-------------------------------------------
+auto tap0
+iface tap0 inet manual
+#       ip tuntap add dev tap0 mode tap
+#       ip addr add 192.168.2.1/24 dev tap0
+#       ip link set dev tap0 up
+        pre-up ip tuntap add dev tap0 mode tap
+        pre-up ip addr add 192.168.2.1/24 dev tap0
+#       up ip link set dev tap0 up
+
+auto br0
+iface br0 inet static
+        bridge_ports eth0 tap0
+        address 10.152.152.11
+        netmask 255.255.192.0
+        gateway 10.152.152.10
+
+#ip tuntap add dev tap0 mode tap
+#ifconfig tap0 192.168.2.1 up
+#brctl addif br0 tap0
+
+
+----------------------------
+iptables has something like:
+----------------------------
+
+ip={your favorite ip address}
+vpn={your favourite vpn server ip address}
+
+Chain INPUT (policy DROP 0 packets, 0 bytes)
+ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state ESTABLISHED
+ACCEPT     all  --  tun0   *       0.0.0.0/0            0.0.0.0/0
+
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ACCEPT     icmp --  *      eth1    0.0.0.0/0            0.0.0.0/0            icmptype 3
+ACCEPT     all  --  eth1   tun0    $ip                  0.0.0.0/0
+ACCEPT     all  --  tun0   eth1    0.0.0.0/0            $ip
+
+Chain OUTPUT (policy DROP 0 packets, 0 bytes)
+ACCEPT     all  --  *      tun0    0.0.0.0/0            0.0.0.0/0
+ACCEPT     all  --  *      *       0.0.0.0/0            $vpn
+
+Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
+ACCEPT     all  --  eth1   *       $ip                  0.0.0.0/0
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+MASQUERADE  all  --  *      tun0    $ip                  0.0.0.0/0
+MASQUERADE  all  --  *      *       $ip                  $vpn
