@@ -43,7 +43,10 @@ fi
 
 shift
 
-sudo ip link set tap0 up
-#exec "$@"
-$@
-sudo ip link set tap0 down
+# Turns out ... interfacef doesn't have to be up for runfromiptcpudp to work.
+#sudo ip link set tap0 up
+##exec "$@"
+#$@
+#sudo ip link set tap0 down
+
+exec "$@"

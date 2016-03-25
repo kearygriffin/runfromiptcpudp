@@ -91,6 +91,7 @@
 #include <stdbool.h>
 #include <sys/un.h>
 #include <linux/netlink.h>
+#include <linux/if.h>
 
 #include <netdb.h>
 #include <ifaddrs.h>
@@ -115,6 +116,9 @@ static int	force_port = -1;
 static int  force_port_n;
 static struct in_addr force_address4_n;
 static struct in6_addr force_address6_n;
+
+static bool ourifwasup = false;
+
 
 //#define LDBGING
 
@@ -272,7 +276,11 @@ void vet_forced_address( void )
 					if( lgRUNFROMIPTCPUDP_VERB >= VERB_ERR )	syslog( LOG_ERR, "runfromiptcpudp: vet() - Error (%d) getting interface info - '%s'. Exiting.\n", retval, gai_strerror( retval ) );
 					exit(EXIT_FAILURE);
 				}
-				if( strcmp( ss, force_address ) == 0 )	sp = ifa->ifa_name;
+				if( strcmp( ss, force_address ) == 0 )
+				{
+					sp = ifa->ifa_name;
+					if( ( ifa->ifa_flags & IFF_UP ) != 0 )	ourifwasup = true;
+				}
 			break;
 		}
 	}
@@ -288,9 +296,20 @@ void vet_forced_address( void )
 		exit(EXIT_FAILURE);
 	}
 
-	if( lgRUNFROMIPTCPUDP_VERB >= VERB_INFO )	syslog( LOG_INFO, "runfromiptcpudp: vet() - Specified address '%s' found on interface '%s'.\n", force_address, ss );
+	if( lgRUNFROMIPTCPUDP_VERB >= VERB_INFO )	syslog( LOG_INFO, "runfromiptcpudp: vet() - Specified address '%s' found on interface '%s'. Interface is%s up. (Not that it needs to be.)\n", force_address, ss, ( ourifwasup ? "" : " not" ) );
 
 } // vet_forced_address()
+
+
+
+/*
+ *
+ */
+
+void processexit( void )
+{
+	if( lgRUNFROMIPTCPUDP_VERB >= VERB_INFO )	syslog( LOG_INFO, "runfromiptcpudp: exit() - Exiting. Interface was%s up.\n", ( ourifwasup ? "" : " not" ) );
+}
 
 
 
@@ -434,6 +453,13 @@ lgRUNFROMIPTCPUDP_VERB = lgIPDBGLVL;
 		if( lgRUNFROMIPTCPUDP_VERB >= VERB_ERR )	syslog( LOG_ERR, "runfromiptcpudp: Cannot resolve sendto()! Exiting.\n" );
 		exit( 1 );
 	}
+
+
+	if( ( ii = atexit( processexit ) ) != 0 )
+	{
+		if( lgRUNFROMIPTCPUDP_VERB >= VERB_ERR )	syslog( LOG_ERR, "runfromiptcpudp: init() - Error %d setting exit function. Ignoring.\n", ii );
+	}
+
 } // init()
 
 
