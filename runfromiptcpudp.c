@@ -113,6 +113,7 @@ static ssize_t  (*real_sendmsg)(int sockfd, const struct msghdr *msg, int flags)
 
 static char	*force_address = NULL;
 static int	force_port = -1;
+static int	ignore_port = -1;
 static int  force_port_n;
 static struct in_addr force_address4_n;
 static struct in6_addr force_address6_n;
@@ -406,6 +407,15 @@ void init( void )
 
 	force_port_n = htons(force_port);
 
+	x = getenv("RUNFROMIPTCPUDP_IGNORE_PORT");
+
+	if( x != NULL )
+	{
+		ignore_port = strtol( x, NULL, 10 );
+
+		if( lgRUNFROMIPTCPUDP_VERB >= VERB_INFO )	syslog( LOG_INFO, "runfromiptcpudp: init() - ignore Port set to '%d'.\n", ignore_port );
+	}
+
 
 	if( lgRUNFROMIPTCPUDP_VERB >= VERB_WARN )	syslog( LOG_WARNING, "runfromiptcpudp: init() - Using address:port '%s:%hu'. [%d == %hu]\n", force_address, force_port, -1, -1 );
 
@@ -542,7 +552,10 @@ int bind( int sockfd, const struct sockaddr *addr, socklen_t addrlen )
 //	We know force_address to not be null, or init() would have exited us. force_address4/6_n set in init.
 
 	errno = 0;
-	retval = inet_pton( new.sa_family, force_address, pnaddrnew ); // Convert/copy each time, lest something stupid stick its fingers in unknowingly.
+	if (ignore_port >= 0 && ignore_port == oldport)
+		retval = -1;
+	else
+		retval = inet_pton( new.sa_family, force_address, pnaddrnew ); // Convert/copy each time, lest something stupid stick its fingers in unknowingly.
 //  1 = success, 0 = invalid src (valid address) string, -1 = invalid AF (& errno -> EAFNOSUPPORT)
 
 	if( retval != 1 )
@@ -569,7 +582,7 @@ int bind( int sockfd, const struct sockaddr *addr, socklen_t addrlen )
 		if( lgRUNFROMIPTCPUDP_VERB >= VERB_WARN )	syslog( LOG_ERR, "runfromiptcpudp: bind() - Error reconverting address ('%s') (%d/%d)! Forwarding call to bind, without action.\n", saddrnew, retval, errno );
 	}
 
-	if( force_port != -1 )
+	if( force_port != -1 && (ignore_port >= 0 && ignore_port != oldport))
 	{
 		*pportnew = force_port_n;
 		if( lgRUNFROMIPTCPUDP_VERB >= VERB_INFO )	syslog( LOG_INFO, "runfromiptcpudp: bind() - Forcing port to %d (%u).\n", force_port, *pportnew );
